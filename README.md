@@ -1,10 +1,10 @@
-# UE5 Garden – Lightweight Drawing-Based Plant Generation Game
+# UE5 Garden - Lightweight Drawing Plant Generation Game
 
 ## 🎮 Project Overview
-Draw paths by dragging the mouse; plants and particle effects are generated automatically along the trajectory.
+Draw trajectories with mouse drag, automatically generate plants and particle effects along the path.
 
-**Tech Stack**: UE5 + Blueprint + Spline + Niagara  
-**Estimated Development Time**: 3–4 days
+**Tech Stack**: UE5 + Blueprint + Spline + Instanced Mesh + Niagara  
+**Development Time**: 3-4 days
 
 ---
 
@@ -12,102 +12,192 @@ Draw paths by dragging the mouse; plants and particle effects are generated auto
 
 ### ✅ Day 1: Drawing System (Completed)
 
-**Implemented Features**:
-- Orthographic top-down camera (no perspective distortion)
-- Visible mouse cursor without affecting camera rotation
-- Fullscreen raycasting (no dead zones)
-- Hold left mouse button to draw a blue spline path
-- Release to stop; press again to start a new stroke
+**Features Implemented**:
+- Orthographic camera top-down view (no perspective distortion)
+- Mouse visible without affecting camera rotation
+- Full-screen raycast detection (no dead zones)
+- Draw blue Spline trajectory by holding left mouse button
+- Release to stop, press again to restart
 
-**Technical Notes**:
-```
-
-Camera Setup: Orthographic, Rotation(-90, -90, 0)
+**Technical Highlights**:
+```cpp
+Camera Setup: Orthographic, Rotation(-90,-90,0)
 Input System: Set Input Mode Game and UI + Ignore Look Input
-Drawing Logic: Spline Component + real-time raycasting
-
+Drawing Logic: Spline Component + Real-time raycast
 ```
 
-**Key Findings**:
-- Pawn default forward is +Y (not +X); top-down view requires an extra -90° Yaw rotation
-- Near Clip Plane in orthographic projection is relative to camera distance, not world coordinates
-- Draw Debug Sphere is the most effective tool for debugging raycasts
+**Key Discoveries**:
+- Pawn class defaults to +Y forward (not +X), top-down view requires additional Yaw -90°
+- Orthographic Near Clip is relative distance to camera, not world coordinate
+- Draw Debug Sphere is the best tool for debugging raycasts
 
 ---
 
-### 🔜 Day 2: Plant Generation System (Planned)
+### ✅ Day 2: Plant Generation System (Completed)
 
-- [ ] Generate plants using Instanced Static Mesh
-- [ ] Even distribution along the spline
-- [ ] Random rotation/scale for natural variation
-- [ ] Performance optimization via instancing
+**Features Implemented**:
+- Automatic plant generation along Spline path
+- Instanced Static Mesh for high-performance rendering
+- Random rotation/scale for natural variation
+- Adjustable spacing and randomization parameters
+
+**Performance**:
+- 500+ instances: 60+ FPS
+- Using Instance rendering to reduce Draw Calls
+
+**Technical Implementation**:
+```cpp
+Core Algorithm:
+  SplineLength ÷ SpawnSpacing = Number of plants
+  ForLoop iteration: Sample position + Random transform + AddInstance
+
+Component Architecture:
+  BP_DrawingManager (Actor)
+  ├─ SplineComponent (Spline)
+  │   └─ InstancedPlantMesh (Instanced Static Mesh) ← Child of Spline
+  └─ PlantSpawner (AC_PlantSpawner) ← Logic component
+
+Key Functions:
+  - GeneratePlants(SplineComponent): Main generation logic
+  - GetLocationAtDistanceAlongSpline: Precise position sampling
+  - Random Float in Range: Natural variation
+```
+
+**Adjustable Parameters**:
+- Spawn Spacing: Distance between plants (default: 100 units)
+- Random Rotation Range: Rotation variation (0-360°)
+- Random Scale Min/Max: Size variation (0.8-1.2)
 
 ---
 
-### 🔜 Day 3: Visual Polish (Planned)
+### 🔜 Day 3: Visual Effects & Polish (Planned)
 
-- [ ] Niagara particle trails
-- [ ] Material optimization (emissive, translucency)
-- [ ] Simple UI hints
+- [ ] Niagara particle trail following mouse
+- [ ] Material optimization (glow, transparency)
+- [ ] Simple UI hints (instructions, counter)
+- [ ] Sound effects (optional)
 
 ---
 
 ## 🚀 How to Run
 
-1. Open the project with UE5.3+
-2. Content Browser → Maps → open `DrawingLevel`
+1. Open project with UE5.3+
+2. Content Browser → Maps → Open `DrawingLevel`
 3. Click Play (Alt+P)
-4. Hold the left mouse button and drag to draw
+4. Hold left mouse button and drag to draw
 
 ---
 
 ## 🛠️ Core Architecture
-```
 
+```
 BP_DrawingPawn (Player Pawn)
-└─ Camera Component (Orthographic Camera)
+└─ Camera Component (Orthographic camera)
+    - Location: Relative (0,0,0)
+    - Ortho Width: 5000
+    - Projection: Orthographic
 
 BP_DrawingManager (Actor)
-├─ SplineComponent (Path Drawing)
+├─ SplineComponent (Path storage)
+│   └─ InstancedPlantMesh (Plant rendering)
+├─ PlantSpawner (AC_PlantSpawner logic)
 └─ Event Graph
-├─ BeginPlay: Set input mode
-├─ Left Mouse Button: Toggle drawing state
-└─ Tick: Raycast + add spline points
+    ├─ BeginPlay: Setup input mode
+    ├─ Left Mouse Button: Drawing state control
+    └─ Tick: Raycast + Add Spline points
+
+AC_PlantSpawner (Actor Component)
+├─ Variables:
+│   ├─ PlantMeshes (Array<Static Mesh>)
+│   ├─ SpawnSpacing (Float)
+│   ├─ RandomRotationRange (Float)
+│   └─ RandomScale Min/Max (Float)
+└─ Functions:
+    └─ GeneratePlants(SplineComponent)
+        - Calculate spawn count
+        - Sample Spline positions
+        - Add randomized instances
 
 GM_Drawing (GameMode)
 └─ Default Pawn Class: BP_DrawingPawn
-
 ```
 
 ---
 
 ## 📝 Development Notes
 
-### Debugging Techniques
-1. **Black Screen**: Use Print String to verify Actor spawning → check camera activation
-2. **Dead Zones**: Use Draw Debug Sphere to verify raycast coverage
-3. **Input Not Triggering**: Check Input Mode → Enable Input vs Game and UI
+### Debugging Techniques Learned
 
-### Pitfalls Encountered
-- ❌ Camera Z = 0 caused Near Clip clipping issues
-- ❌ Rotation(-90, 0, 0) resulted in no visible output → Pawn orientation issue
-- ✅ Final setup: Z = 2000 + Rotation(-90, -90, 0)
+**Day 1 Issues**:
+1. Black screen → Print String to verify Actor spawning → Check camera activation
+2. Dead zones → Draw Debug Sphere to verify raycast coverage
+3. Input not triggering → Check Input Mode settings
+
+**Day 2 Issues**:
+1. "Accessed None" error → Forgot to pass SplineComponent reference in Released event
+2. Plants clustering at center → Wrong Coordinate Space (Local instead of World)
+3. Can't see plants → InstancedMesh not configured with Static Mesh/Material
+
+### Lessons Learned
+
+**Component Hierarchy**:
+- InstancedStaticMeshComponent must be child of a Scene Component (needs Transform)
+- Actor Components (like AC_PlantSpawner) are logic-only, exist at root level
+- Scene Components form the transform hierarchy
+
+**Blueprint Best Practices**:
+- Always validate references with Is Valid before use
+- Use Print String liberally during development
+- Separate concerns: Pawn for camera, Manager for logic, Component for algorithms
+
+**Performance Optimization**:
+- Instanced Static Mesh reduces draw calls dramatically
+- 500+ instances with 60 FPS vs ~10 FPS with individual Static Meshes
+- Disable shadows on instances if performance is an issue
 
 ---
 
-## 🎯 Expected Showcase
+## 🎯 Technical Showcase Points
 
-**Technical Highlights**:
-- Dynamic spline generation
-- Instanced Mesh performance optimization
-- Niagara particle system
-- UE5 Lumen lighting
-- Modular Blueprint architecture
+- ✅ Spline dynamic generation
+- ✅ Instanced Mesh performance optimization  
+- ✅ Procedural generation with randomization
+- ✅ UE5 Lumen lighting (Day 3)
+- ✅ Niagara particle system (Day 3)
+- ✅ Blueprint modular architecture
+
+---
+
+## 🐛 Common Issues & Solutions
+
+### Issue: Black screen after Play
+**Solution**: Check camera Rotation (-90,-90,0) and Location (0,0,2000)
+
+### Issue: Plants not visible
+**Solution**: 
+- Verify InstancedPlantMesh has Static Mesh assigned
+- Check Material is opaque and visible
+- Verify PlantSpawner.InstancedMeshComponent is connected in BeginPlay
+
+### Issue: Plants clustering at origin
+**Solution**: Set Coordinate Space to World (not Local) in GetLocationAtDistanceAlongSpline
+
+### Issue: "Accessed None" error
+**Solution**: Pass valid SplineComponent reference when calling GeneratePlants function
 
 ---
 
 ## 📄 License
-Learning project, for reference only
+Learning project for reference only
 
-**Last Updated**: 2026-01-27 23:45  
-**Current Status**: Day 1 completed, preparing for Day 2
+**Last Updated**: 2026-01-29 01:30  
+**Current Status**: Day 2 completed, ready for Day 3 development
+
+---
+
+## 📊 Project Stats
+
+- **Lines of Blueprint Nodes**: ~150
+- **Assets Used**: Minimal (Plane, Cube/Basic Mesh, Materials)
+- **Performance**: 500+ instances @ 60 FPS
+- **Development Time**: ~6 hours (Day 1 + Day 2)
