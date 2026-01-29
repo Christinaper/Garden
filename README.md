@@ -70,12 +70,33 @@ Key Functions:
 
 ---
 
-### 🔜 Day 3: Visual Effects & Polish (Planned)
+### 🚧 Day 3: Visual Effects & Polish (In Progress)
 
-- [ ] Niagara particle trail following mouse
-- [ ] Material optimization (glow, transparency)
-- [ ] Simple UI hints (instructions, counter)
-- [ ] Sound effects (optional)
+**Current Status**: Technical MVP completed, visual refinement in progress
+
+**Completed**:
+- ✅ Niagara particle trail system
+- ✅ UI counter and instructions
+- ✅ Core gameplay loop functional
+
+**Known Issues**:
+- ⚠️ Top-down view makes plants hard to distinguish (too small/flat)
+- ⚠️ Visual similarity to solid brush strokes (lacks depth)
+- ⚠️ Limited camera control restricts viewing angles
+
+**Planned Improvements** (Day 4-7):
+- 🎥 Camera system: Zoom, pan, orbit controls
+- 🌿 Plant visual upgrade: Larger scale, mixed varieties, height variation
+- 🎨 Environment polish: Lighting, post-processing, ground details
+- 🎮 Extended interactions: Multiple brush types, eraser tool
+- 🎬 Demo preparation: Photo mode, video recording
+
+**Technical Achievement**:
+- Core architecture: ✓ Stable and performant
+- Performance: ✓ 500+ instances @ 60 FPS
+- Scalability: ✓ Ready for feature expansion
+
+**Focus**: Currently prioritizing visual appeal over additional features to create a more engaging demo experience.
 
 ---
 
@@ -190,8 +211,8 @@ GM_Drawing (GameMode)
 ## 📄 License
 Learning project for reference only
 
-**Last Updated**: 2026-01-29 01:30  
-**Current Status**: Day 2 completed, ready for Day 3 development
+**Last Updated**: 2026-01-30 00:07 
+**Current Status**: Day 3 completed, ready for Day 4 development
 
 ---
 
@@ -200,4 +221,4 @@ Learning project for reference only
 - **Lines of Blueprint Nodes**: ~150
 - **Assets Used**: Minimal (Plane, Cube/Basic Mesh, Materials)
 - **Performance**: 500+ instances @ 60 FPS
-- **Development Time**: ~6 hours (Day 1 + Day 2)
+- **Development Time**: ~6 hours
